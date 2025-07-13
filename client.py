@@ -9,11 +9,14 @@ from game import SteamGame
 class SteamClient(object):
     def __init__(self, api_key: str, steamid: int, use_cache: bool) -> None:
         self.api_key = api_key
-        self.client = WebAPI(key=self.api_key)
         self.steamid = steamid
         self.use_cache = use_cache
+        self.client = None
 
     def get_owned_games(self) -> List[SteamGame]:
+        if self.client is None:
+            self.client = WebAPI(key=self.api_key)
+
         if self.use_cache and os.path.exists('games.json'):
             print('A games.json file exists; loading from local cache.')
             print('You can disable this behavior with --usecache=False.')
@@ -55,6 +58,9 @@ class SteamClient(object):
         return games
 
     def get_achievements_for_game(self, appid: int) -> tuple:
+        if self.client is None:
+            self.client = WebAPI(key=self.api_key)
+
         try:
             result = self.client.call(
                 'ISteamUserStats.GetPlayerAchievements_v1',
