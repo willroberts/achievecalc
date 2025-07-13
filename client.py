@@ -1,39 +1,55 @@
 import json
 import os
 import requests
+from dataclasses import dataclass
 from steam.webapi import WebAPI
 from typing import List
 
-from game import SteamGame
+@dataclass
+class SteamGame:
+    app_id: int
+    name: str
+    achievements_unlocked: int = 0
+    achievements_total: int = 0
 
 class SteamClient(object):
-    def __init__(self, api_key: str, steamid: int, nocache: bool) -> None:
+    def __init__(self, api_key: str, steam_id: int, nocache: bool) -> None:
         self.api_key = api_key
-        self.steamid = steamid
+        self.steam_id = steam_id
         self.nocache = nocache
         self.client = None
 
+    def initialize_client(self) -> None:
+        self.client = WebAPI(key=self.api_key)
+
+    def save_games_to_file(self, games) -> None:
+        with open('games.json', 'w') as f:
+            f.write(json.dumps(games, default=vars))
+
+    def load_games_from_file(self) -> List[SteamGame]:
+        if not os.path.exists('games.json'):
+            raise Exception('No games.json file present.')
+        games = list()
+        with open('games.json', 'r') as f:
+            for game in json.loads(f.read()):
+                games.append(SteamGame(
+                    app_id=game['app_id'],
+                    name=game['name'],
+                    achievements_unlocked=game['achievements_unlocked'],
+                    achievements_total=game['achievements_total'],
+                ))
+        return games
+
     def get_owned_games(self) -> List[SteamGame]:
-        if self.client is None: self.client = WebAPI(key=self.api_key)
+        if self.client is None: self.initialize_client()
 
         if not self.nocache and os.path.exists('games.json'):
             print('A games.json file exists; loading from local cache.')
             print('You can disable this behavior with --nocache.')
-            with open('games.json', 'r') as f:
-                games = list()
-                data = json.loads(f.read())
-                for entry in data:
-                    game = SteamGame(
-                        appid=entry['appid'],
-                        name=entry['name'],
-                        achievements_unlocked=entry['achievements_unlocked'],
-                        achievements_total=entry['achievements_total'],
-                    )
-                    games.append(game)
-                return games
+            return self.load_games_from_file()
 
         print(f'Retrieving games and achievements...')
-        result = self.client.call(
+        resp = self.client.call(
             'IPlayerService.GetOwnedGames_v1',
             appids_filter=[],
             include_appinfo=True,
@@ -43,41 +59,42 @@ class SteamClient(object):
             key=self.api_key,
             language='en-US',
             skip_unvetted_apps=True,
-            steamid=self.steamid,
+            steamid=self.steam_id,
         )
         games = list()
-        for game in result['response']['games']:
-            g = SteamGame(name=game['name'], appid=game['appid'])
-            acs = self.get_achievements_for_game(appid=game['appid'])
-            (g.achievements_unlocked, g.achievements_total) = acs
-            games.append(g)
-        data = json.dumps(games, default=vars)
-        with open('games.json', 'w') as f:
-            f.write(data)
+        for game in resp['response']['games']:
+            achievements = self.get_achievements_for_game(app_id=game['appid'])
+            games.append(SteamGame(
+                app_id=game['appid'],
+                name=game['name'],
+                achievements_unlocked=achievements[0],
+                achievements_total=achievements[1],
+            ))
+
+        self.save_games_to_file(games)
         return games
 
-    def get_achievements_for_game(self, appid: int) -> tuple:
-        if self.client is None: self.client = WebAPI(key=self.api_key)
+    def get_achievements_for_game(self, app_id: int) -> tuple:
+        if self.client is None: self.initialize_client()
 
         try:
-            result = self.client.call(
+            resp = self.client.call(
                 'ISteamUserStats.GetPlayerAchievements_v1',
-                appid=appid,
+                appid=app_id,
                 key=self.api_key,
                 l='en-US',
-                steamid=self.steamid,
+                steamid=self.steam_id,
             )
-            if 'achievements' not in result['playerstats'].keys(): return (0, 0)
-            x = result['playerstats']['achievements']
+            if 'achievements' not in resp['playerstats'].keys(): return (0, 0)
+            x = resp['playerstats']['achievements']
             return (
-                sum([a['achieved'] for a in result['playerstats']['achievements']]),
-                len(result['playerstats']['achievements']),
+                sum([a['achieved'] for a in resp['playerstats']['achievements']]),
+                len(resp['playerstats']['achievements']),
             )
         except requests.exceptions.HTTPError as e:
             reason = e.response.json().get('playerstats').get('error')
             if reason == 'Requested app has no stats': return (0, 0)
-            print('Error:', e.response.status_code, e.response.text)
-            return (0, 0)
+            raise Exception(f'HTTP Error {e.response.status_code}: {e.response.text}')
 
     # Average Game Completion Rate (AGCR) is defined as the average of game
     # completion percentage among games where at least 1 achievement has been
@@ -88,22 +105,20 @@ class SteamClient(object):
             if game.achievements_unlocked < 1: continue
             pcts.append(game.achievements_unlocked / game.achievements_total)
         if len(pcts) == 0:
-            print('Error: No games with achievements found.')
-            return 0
+            raise Exception('No games with achievements found.')
         return sum(pcts) / len(pcts)
 
     # Highest gain is defined as the Game which provides the highest AGCR
     # increase on a per-achievement basis.
     def calculate_highest_gain(self, games: List[SteamGame]) -> str:
-        result = None
+        highest_gain = None
         fewest_achievements = 2**63-1
         for game in games:
             if game.achievements_unlocked < 1: continue
             if game.achievements_unlocked == game.achievements_total: continue
             if game.achievements_total < fewest_achievements:
-                result = game
+                highest_gain = game
                 fewest_achievements = game.achievements_total
-        if result is None:
-            print('Error: Could not determine game with highest potential AGCR gain.')
-            return ''
-        return result.name
+        if highest_gain is None:
+            raise Exception('Could not determine game with highest potential AGCR gain.')
+        return highest_gain.name
