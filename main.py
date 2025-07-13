@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 from argparse import ArgumentParser
 
 from client import SteamClient
@@ -10,6 +11,10 @@ if __name__ == '__main__':
     parser.add_argument('--usecache', type=bool, default=True)
     parser.add_argument
     args = parser.parse_args()
+
+    if not os.path.isfile(args.keyfile):
+        print(f'Error: Steam Web API key not found at {args.keyfile}')
+        exit(1)
 
     with open(args.keyfile, 'r') as f:
         key = f.read().strip()
