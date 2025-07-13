@@ -26,4 +26,4 @@ if __name__ == '__main__':
     print(f'AGCR is {agcr}.')
 
     highest_gain = c.calculate_highest_gain(games)
-    print(f'Game {highest_gain.name} will provide the most AGCR increase.')
+    print(f'Game {highest_gain} will provide the most AGCR increase.')

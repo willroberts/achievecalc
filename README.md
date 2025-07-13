@@ -24,7 +24,7 @@ pip install -r requirements.txt
 >>> c.calculate_agcr(games)
 0.12345
 >>> c.calculate_highest_gain(games)
-Game(appid=234900, name='Anodyne', achievements_unlocked=1, achievements_total=6)
+'Game Name Here'
 ```
 
 See `main.py` for a complete example.

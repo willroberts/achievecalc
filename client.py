@@ -88,11 +88,14 @@ class SteamClient(object):
         for game in games:
             if game.achievements_unlocked < 1: continue
             pcts.append(game.achievements_unlocked / game.achievements_total)
+        if len(pcts) == 0:
+            print('Error: No games with achievements found.')
+            return 0
         return sum(pcts) / len(pcts)
 
     # Highest gain is defined as the Game which provides the highest AGCR
     # increase on a per-achievement basis.
-    def calculate_highest_gain(self, games: List[SteamGame]) -> SteamGame:
+    def calculate_highest_gain(self, games: List[SteamGame]) -> str:
         result = None
         fewest_achievements = 2**63-1
         for game in games:
@@ -101,4 +104,7 @@ class SteamClient(object):
             if game.achievements_total < fewest_achievements:
                 result = game
                 fewest_achievements = game.achievements_total
-        return result
+        if result is None:
+            print('Error: Could not determine game with highest potential AGCR gain.')
+            return ''
+        return result.name
