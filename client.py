@@ -74,7 +74,8 @@ class SteamClient(object):
                 len(result['playerstats']['achievements']),
             )
         except requests.exceptions.HTTPError as e:
-            # Games with no achievements sometimes return HTTP/400 instead of 0.
+            reason = e.response.json().get('playerstats').get('error')
+            if reason == 'Requested app has no stats': return (0, 0)
             print('Error:', e.response.status_code, e.response.text)
             return (0, 0)
 
