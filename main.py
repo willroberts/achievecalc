@@ -9,7 +9,6 @@ if __name__ == '__main__':
     parser.add_argument('steamid', type=int)
     parser.add_argument('--keyfile', type=str, default='.steam-api-key')
     parser.add_argument('--nocache', action='store_true')
-    parser.add_argument
     args = parser.parse_args()
 
     if not os.path.isfile(args.keyfile):
