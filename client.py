@@ -27,9 +27,11 @@ class SteamClient(object):
             f.write(json.dumps(games, default=vars))
 
     def load_games_from_file(self) -> List[SteamGame]:
-        if not os.path.exists('games.json'):
-            raise Exception('No games.json file present.')
         games = list()
+        if not os.path.exists('games.json'):
+            return games
+        print('A games.json file exists; loading from local cache.')
+        print('You can disable this behavior with --nocache.')
         with open('games.json', 'r') as f:
             for game in json.loads(f.read()):
                 games.append(SteamGame(
@@ -43,10 +45,9 @@ class SteamClient(object):
     def get_owned_games(self) -> List[SteamGame]:
         if self.client is None: self.initialize_client()
 
-        if not self.nocache and os.path.exists('games.json'):
-            print('A games.json file exists; loading from local cache.')
-            print('You can disable this behavior with --nocache.')
-            return self.load_games_from_file()
+        if not self.nocache:
+            games = self.load_games_from_file()
+            if len(games) > 0: return games
 
         print(f'Retrieving games and achievements...')
         resp = self.client.call(
@@ -71,7 +72,8 @@ class SteamClient(object):
                 achievements_total=achievements[1],
             ))
 
-        self.save_games_to_file(games)
+        if not self.nocache:
+            self.save_games_to_file(games)
         return games
 
     def get_achievements_for_game(self, app_id: int) -> tuple:
