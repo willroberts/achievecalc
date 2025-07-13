@@ -8,7 +8,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('steamid', type=int)
     parser.add_argument('--keyfile', type=str, default='.steam-api-key')
-    parser.add_argument('--usecache', type=bool, default=True)
+    parser.add_argument('--nocache', action='store_true')
     parser.add_argument
     args = parser.parse_args()
 
@@ -18,7 +18,7 @@ if __name__ == '__main__':
 
     with open(args.keyfile, 'r') as f:
         key = f.read().strip()
-    c = SteamClient(api_key=key, steamid=args.steamid, use_cache=args.usecache)
+    c = SteamClient(api_key=key, steamid=args.steamid, nocache=args.nocache)
     print(f'Connected to Steam Web API with Steam ID {args.steamid}.')
 
     games = c.get_owned_games()

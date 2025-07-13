@@ -7,19 +7,19 @@ from typing import List
 from game import SteamGame
 
 class SteamClient(object):
-    def __init__(self, api_key: str, steamid: int, use_cache: bool) -> None:
+    def __init__(self, api_key: str, steamid: int, nocache: bool) -> None:
         self.api_key = api_key
         self.steamid = steamid
-        self.use_cache = use_cache
+        self.nocache = nocache
         self.client = None
 
     def get_owned_games(self) -> List[SteamGame]:
         if self.client is None:
             self.client = WebAPI(key=self.api_key)
 
-        if self.use_cache and os.path.exists('games.json'):
+        if not self.nocache and os.path.exists('games.json'):
             print('A games.json file exists; loading from local cache.')
-            print('You can disable this behavior with --usecache=False.')
+            print('You can disable this behavior with --nocache.')
             with open('games.json', 'r') as f:
                 games = list()
                 data = json.loads(f.read())
