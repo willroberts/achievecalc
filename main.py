@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+from argparse import ArgumentParser
+
+from client import SteamClient
+
+if __name__ == '__main__':
+    parser = ArgumentParser()
+    parser.add_argument('steamid', type=int)
+    parser.add_argument('--keyfile', type=str, default='.steam-api-key')
+    parser.add_argument('--usecache', type=bool, default=True)
+    parser.add_argument
+    args = parser.parse_args()
+
+    with open(args.keyfile, 'r') as f:
+        key = f.read().strip()
+    c = SteamClient(api_key=key, steamid=args.steamid, use_cache=args.usecache)
+    print(f'Connected to Steam Web API with Steam ID {args.steamid}.')
+
+    games = c.get_owned_games()
+    agcr = c.calculate_agcr(games)
+    print(f'AGCR is {agcr}.')
+
+    highest_gain = c.calculate_highest_gain(games)
+    print(f'Game {highest_gain.name} will provide the most AGCR increase.')
