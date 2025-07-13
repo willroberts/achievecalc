@@ -16,7 +16,7 @@ class SteamClient(object):
     def __init__(self, api_key: str, steam_id: int, nocache: bool) -> None:
         self.api_key = api_key
         self.steam_id = steam_id
-        self.nocache = nocache
+        self.cache_enabled = False if nocache else True
         self.client = None
 
     def initialize_client(self) -> None:
@@ -45,7 +45,7 @@ class SteamClient(object):
     def get_owned_games(self) -> List[SteamGame]:
         if self.client is None: self.initialize_client()
 
-        if not self.nocache:
+        if self.cache_enabled:
             games = self.load_games_from_file()
             if len(games) > 0: return games
 
@@ -63,7 +63,7 @@ class SteamClient(object):
             steamid=self.steam_id,
         )
         games = list()
-        for game in resp['response']['games']:
+        for game in resp.get('response', {}).get('games'):
             achievements = self.get_achievements_for_game(app_id=game['appid'])
             games.append(SteamGame(
                 app_id=game['appid'],
@@ -72,7 +72,7 @@ class SteamClient(object):
                 achievements_total=achievements[1],
             ))
 
-        if not self.nocache:
+        if self.cache_enabled:
             self.save_games_to_file(games)
         return games
 
@@ -87,11 +87,11 @@ class SteamClient(object):
                 l='en-US',
                 steamid=self.steam_id,
             )
-            if 'achievements' not in resp['playerstats'].keys(): return (0, 0)
-            x = resp['playerstats']['achievements']
+            achievements = resp.get('playerstats', {}).get('achievements')
+            if achievements is None: return (0, 0)
             return (
-                sum([a['achieved'] for a in resp['playerstats']['achievements']]),
-                len(resp['playerstats']['achievements']),
+                sum([a.get('achieved') for a in achievements]),
+                len(achievements),
             )
         except requests.exceptions.HTTPError as e:
             reason = e.response.json().get('playerstats').get('error')
