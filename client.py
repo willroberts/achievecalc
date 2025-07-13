@@ -3,7 +3,6 @@ import os
 import requests
 from dataclasses import dataclass
 from steam.webapi import WebAPI
-from typing import List
 
 @dataclass
 class SteamGame:
@@ -26,7 +25,7 @@ class SteamClient(object):
         with open('games.json', 'w') as f:
             f.write(json.dumps(games, default=vars))
 
-    def load_games_from_file(self) -> List[SteamGame]:
+    def load_games_from_file(self) -> list[SteamGame]:
         games = list()
         if not os.path.exists('games.json'):
             return games
@@ -42,7 +41,7 @@ class SteamClient(object):
                 ))
         return games
 
-    def get_owned_games(self) -> List[SteamGame]:
+    def get_owned_games(self) -> list[SteamGame]:
         if self.client is None: self.initialize_client()
 
         if self.cache_enabled:
@@ -76,7 +75,7 @@ class SteamClient(object):
             self.save_games_to_file(games)
         return games
 
-    def get_achievements_for_game(self, app_id: int) -> tuple:
+    def get_achievements_for_game(self, app_id: int) -> tuple[int, int]:
         if self.client is None: self.initialize_client()
 
         try:
@@ -101,7 +100,7 @@ class SteamClient(object):
     # Average Game Completion Rate (AGCR) is defined as the average of game
     # completion percentage among games where at least 1 achievement has been
     # unlocked.
-    def calculate_agcr(self, games: List[SteamGame]) -> float:
+    def calculate_agcr(self, games: list[SteamGame]) -> float:
         pcts = list()
         for game in games:
             if game.achievements_unlocked < 1: continue
@@ -112,7 +111,7 @@ class SteamClient(object):
 
     # Highest gain is defined as the Game which provides the highest AGCR
     # increase on a per-achievement basis.
-    def calculate_highest_gain(self, games: List[SteamGame]) -> str:
+    def calculate_highest_gain(self, games: list[SteamGame]) -> str:
         highest_gain = None
         fewest_achievements = 2**63-1
         for game in games:
