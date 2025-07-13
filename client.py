@@ -14,8 +14,7 @@ class SteamClient(object):
         self.client = None
 
     def get_owned_games(self) -> List[SteamGame]:
-        if self.client is None:
-            self.client = WebAPI(key=self.api_key)
+        if self.client is None: self.client = WebAPI(key=self.api_key)
 
         if not self.nocache and os.path.exists('games.json'):
             print('A games.json file exists; loading from local cache.')
@@ -58,8 +57,7 @@ class SteamClient(object):
         return games
 
     def get_achievements_for_game(self, appid: int) -> tuple:
-        if self.client is None:
-            self.client = WebAPI(key=self.api_key)
+        if self.client is None: self.client = WebAPI(key=self.api_key)
 
         try:
             result = self.client.call(
@@ -69,15 +67,15 @@ class SteamClient(object):
                 l='en-US',
                 steamid=self.steamid,
             )
-            if 'achievements' not in result['playerstats'].keys():
-                return (0, 0)
+            if 'achievements' not in result['playerstats'].keys(): return (0, 0)
             x = result['playerstats']['achievements']
             return (
                 sum([a['achieved'] for a in result['playerstats']['achievements']]),
                 len(result['playerstats']['achievements']),
             )
         except requests.exceptions.HTTPError as e:
-            # Games with no achievements return HTTP/400 instead of 0.
+            # Games with no achievements sometimes return HTTP/400 instead of 0.
+            print('Error:', e.response.status_code, e.response.text)
             return (0, 0)
 
     # Average Game Completion Rate (AGCR) is defined as the average of game
