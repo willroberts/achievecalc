@@ -138,6 +138,8 @@ class SteamClient(object):
         AGCR opportunities are games with the highest per-achievement AGCR increase.
         '''
         games = [g for g in games if g.achievements_unlocked > 0 and g.achievements_unlocked != g.achievements_total]
+        if top >= len(games):
+            return games
         return sorted(games, key=lambda g: g.achievements_total)[:top]
 
     def top_agcr_detractors(self, games: list[SteamGame], top: int = 10) -> list[SteamGame]:
