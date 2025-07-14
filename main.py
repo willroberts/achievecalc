@@ -27,10 +27,10 @@ if __name__ == '__main__':
 
     print('----------')
     print('Top AGCR opportunities:')
-    for game in c.top_agcr_opportunities(games):
+    for game in c.top_agcr_opportunities(games, top=5):
         print(f'{game.name}: {game.achievements_unlocked} out of {game.achievements_total}')
 
     print('----------')
     print('Top AGCR detractors:')
-    for game in c.top_agcr_detractors(games):
+    for game in c.top_agcr_detractors(games, top=5):
         print(f'{game.name}: {game.achievements_unlocked} out of {game.achievements_total}')
