@@ -1,6 +1,6 @@
 # achievement-calc
 
-Returns the top game in your Steam library which will contribute the most value
+Returns the top games in your Steam library which will contribute the most value
 to Average Game Completion Rate (AGCR).
 
 To use Achievement APIs, you must set the privacy settings for 'My Profile' and
@@ -28,11 +28,11 @@ games = c.get_owned_games()
 # Compute Average Game Completion Rate.
 c.calculate_agcr(games)
 
-# Find highest per-achievement opportunity.
-c.calculate_highest_gain(games)
+# Find top AGCR opportunities.
+c.top_agcr_opportunities(games, top=10)
 
 # Find top AGCR detractors.
-c.top_detractors(games, top=10)
+c.top_agcr_detractors(games, top=10)
 ```
 
 See `main.py` for a more complete example.

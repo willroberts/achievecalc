@@ -22,11 +22,15 @@ if __name__ == '__main__':
 
     games = c.get_owned_games()
     agcr = c.calculate_agcr(games)
+    print('----------')
     print(f'AGCR is {agcr}.')
 
-    highest_gain = c.calculate_highest_gain(games)
-    print(f'Game {highest_gain} will provide the most AGCR increase.')
+    print('----------')
+    print('Top AGCR opportunities:')
+    for game in c.top_agcr_opportunities(games):
+        print(f'{game.name}: {game.achievements_unlocked} out of {game.achievements_total}')
 
-    print('Top detractors:')
-    for game in c.top_detractors(games):
-        print(game)
+    print('----------')
+    print('Top AGCR detractors:')
+    for game in c.top_agcr_detractors(games):
+        print(f'{game.name}: {game.achievements_unlocked} out of {game.achievements_total}')

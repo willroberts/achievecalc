@@ -109,23 +109,14 @@ class SteamClient(object):
             raise Exception('No games with achievements found.')
         return sum(pcts) / len(pcts)
 
-    # Highest gain is defined as the Game which provides the highest AGCR
-    # increase on a per-achievement basis.
-    def calculate_highest_gain(self, games: list[SteamGame]) -> str:
-        highest_gain = None
-        fewest_achievements = 2**63-1
-        for game in games:
-            if game.achievements_unlocked < 1: continue
-            if game.achievements_unlocked == game.achievements_total: continue
-            if game.achievements_total < fewest_achievements:
-                highest_gain = game
-                fewest_achievements = game.achievements_total
-        if highest_gain is None:
-            raise Exception('Could not determine game with highest potential AGCR gain.')
-        return highest_gain.name
+    # AGCR opportunities are games with the highest per-achievement AGCR increase.
+    def top_agcr_opportunities(self, games: list[SteamGame], top: int = 10) -> str:
+        games = [g for g in games if g.achievements_unlocked > 0 and g.achievements_unlocked != g.achievements_total]
+        return sorted(games, key=lambda g: g.achievements_total)[:top]
 
-    def top_detractors(self, games: list[SteamGame], top: int = 10) -> list[SteamGame]:
-        games = [g for g in games if g.achievements_unlocked > 0 and g.achievements_total > 0]
+    # AGCR detractors are games with the lowest percent completion.
+    def top_agcr_detractors(self, games: list[SteamGame], top: int = 10) -> list[SteamGame]:
+        games = [g for g in games if g.achievements_unlocked > 0 and g.achievements_unlocked != g.achievements_total]
         if top >= len(games):
             return games
         return sorted(games, key=lambda g: g.achievements_unlocked / g.achievements_total)[:top]
