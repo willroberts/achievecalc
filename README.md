@@ -19,11 +19,20 @@ pip install -r requirements.txt
 ## Usage
 
 ```python
-client = SteamClient(api_key='abc', steamid=123) # Create an API client.
-games = client.get_owned_games()                 # Fetch games and achievements from API.
-client.calculate_agcr(games)                     # Compute Average Game Completion Rate.
-client.calculate_highest_gain(games)             # Find highest per-achievement opportunity.
-client.top_detractors(games, top=10)             # Find top AGCR detractors.
+# Create an API client.
+c = SteamClient(api_key='abc', steamid=123)
+
+# Fetch games and achievements from API.
+games = c.get_owned_games()
+
+# Compute Average Game Completion Rate.
+c.calculate_agcr(games)
+
+# Find highest per-achievement opportunity.
+c.calculate_highest_gain(games)
+
+# Find top AGCR detractors.
+c.top_detractors(games, top=10)
 ```
 
 See `main.py` for a more complete example.
