@@ -66,18 +66,22 @@ class SteamClient(object):
             if len(games) > 0: return games
 
         print(f'Retrieving games and achievements...')
-        resp = self.client.call(
-            'IPlayerService.GetOwnedGames_v1',
-            appids_filter=[],
-            include_appinfo=True,
-            include_extended_appinfo=False,
-            include_free_sub=False,
-            include_played_free_games=False,
-            key=self.api_key,
-            language='en-US',
-            skip_unvetted_apps=True,
-            steamid=steam_id,
-        )
+        try:
+            resp = self.client.call(
+                'IPlayerService.GetOwnedGames_v1',
+                appids_filter=[],
+                include_appinfo=True,
+                include_extended_appinfo=False,
+                include_free_sub=False,
+                include_played_free_games=False,
+                key=self.api_key,
+                language='en-US',
+                skip_unvetted_apps=True,
+                steamid=steam_id,
+            )
+        except requests.exceptions.HTTPError as e:
+            raise Exception(f'HTTP Error {e.response.status_code}: {e.response.text}')
+
         games = list()
         for game in resp.get('response', {}).get('games'):
             achievements = self.get_achievements_for_game(
