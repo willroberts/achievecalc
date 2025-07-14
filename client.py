@@ -111,7 +111,7 @@ class SteamClient(object):
                 steamid=steam_id,
             )
         except requests.exceptions.HTTPError as e:
-            reason = e.response.json().get('playerstats').get('error')
+            reason = e.response.json().get('playerstats', {}).get('error')
             if reason == 'Requested app has no stats': return (0, 0)
             raise Exception(f'HTTP Error {e.response.status_code}: {e.response.text}')
 
