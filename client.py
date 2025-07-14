@@ -123,3 +123,9 @@ class SteamClient(object):
         if highest_gain is None:
             raise Exception('Could not determine game with highest potential AGCR gain.')
         return highest_gain.name
+
+    def top_detractors(self, games: list[SteamGame], top: int = 10) -> list[SteamGame]:
+        games = [g for g in games if g.achievements_unlocked > 0 and g.achievements_total > 0]
+        if top >= len(games):
+            return games
+        return sorted(games, key=lambda g: g.achievements_unlocked / g.achievements_total)[:top]

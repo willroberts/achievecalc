@@ -26,3 +26,7 @@ if __name__ == '__main__':
 
     highest_gain = c.calculate_highest_gain(games)
     print(f'Game {highest_gain} will provide the most AGCR increase.')
+
+    print('Top detractors:')
+    for game in c.top_detractors(games):
+        print(game)

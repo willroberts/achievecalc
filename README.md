@@ -1,4 +1,4 @@
-# achievecalc
+# achievement-calc
 
 Returns the top game in your Steam library which will contribute the most value
 to Average Game Completion Rate (AGCR).
@@ -19,12 +19,11 @@ pip install -r requirements.txt
 ## Usage
 
 ```python
->>> c = SteamClient(api_key='abcd1234', steamid=1234)
->>> games = c.get_owned_games() # cached locally at games.json
->>> c.calculate_agcr(games)
-0.12345
->>> c.calculate_highest_gain(games)
-'Game Name Here'
+client = SteamClient(api_key='abc', steamid=123) # Create an API client.
+games = client.get_owned_games()                 # Fetch games and achievements from API.
+client.calculate_agcr(games)                     # Compute Average Game Completion Rate.
+client.calculate_highest_gain(games)             # Find highest per-achievement opportunity.
+client.top_detractors(games, top=10)             # Find top AGCR detractors.
 ```
 
-See `main.py` for a complete example.
+See `main.py` for a more complete example.
