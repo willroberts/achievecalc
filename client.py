@@ -101,10 +101,7 @@ class SteamClient(object):
     # completion percentage among games where at least 1 achievement has been
     # unlocked.
     def calculate_agcr(self, games: list[SteamGame]) -> float:
-        pcts = list()
-        for game in games:
-            if game.achievements_unlocked < 1: continue
-            pcts.append(game.achievements_unlocked / game.achievements_total)
+        pcts = [g.achievements_unlocked / g.achievements_total for g in games if g.achievements_unlocked > 0]
         if len(pcts) == 0:
             raise Exception('No games with achievements found.')
         return sum(pcts) / len(pcts)
