@@ -17,10 +17,10 @@ if __name__ == '__main__':
 
     with open(args.keyfile, 'r') as f:
         key = f.read().strip()
-    c = SteamClient(api_key=key, steam_id=args.steamid, nocache=args.nocache)
+    c = SteamClient(api_key=key, nocache=args.nocache)
     print(f'Connected to Steam Web API with Steam ID {args.steamid}.')
 
-    games = c.get_owned_games()
+    games = c.get_owned_games(steam_id=args.steamid)
     agcr = c.calculate_agcr(games)
     print('----------')
     print(f'AGCR is {agcr}.')

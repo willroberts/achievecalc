@@ -19,9 +19,8 @@ class SteamClient(object):
     SteamClient provides methods for fetching game and achievement metadata,
     and computing various values related to Average Game Completion Rate (AGCR).
     '''
-    def __init__(self, api_key: str, steam_id: int, nocache: bool) -> None:
+    def __init__(self, api_key: str, nocache: bool) -> None:
         self.api_key = api_key
-        self.steam_id = steam_id
         self.cache_enabled = False if nocache else True
         self.client = None
 
@@ -56,7 +55,7 @@ class SteamClient(object):
                 ))
         return games
 
-    def get_owned_games(self) -> list[SteamGame]:
+    def get_owned_games(self, steam_id: int) -> list[SteamGame]:
         '''
         Retrieves metadata for all games in a user's library.
         '''
@@ -77,11 +76,14 @@ class SteamClient(object):
             key=self.api_key,
             language='en-US',
             skip_unvetted_apps=True,
-            steamid=self.steam_id,
+            steamid=steam_id,
         )
         games = list()
         for game in resp.get('response', {}).get('games'):
-            achievements = self.get_achievements_for_game(app_id=game['appid'])
+            achievements = self.get_achievements_for_game(
+                app_id=game['appid'],
+                steam_id=steam_id,
+            )
             games.append(SteamGame(
                 app_id=game['appid'],
                 name=game['name'],
@@ -93,7 +95,7 @@ class SteamClient(object):
             self.save_games_to_file(games)
         return games
 
-    def get_achievements_for_game(self, app_id: int) -> tuple[int, int]:
+    def get_achievements_for_game(self, app_id: int, steam_id: int) -> tuple[int, int]:
         '''
         Returns the number of unlocked achievements and total achievements for
         the given game.
@@ -106,7 +108,7 @@ class SteamClient(object):
                 appid=app_id,
                 key=self.api_key,
                 l='en-US',
-                steamid=self.steam_id,
+                steamid=steam_id,
             )
         except requests.exceptions.HTTPError as e:
             reason = e.response.json().get('playerstats').get('error')
